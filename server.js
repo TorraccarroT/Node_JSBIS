@@ -48,14 +48,23 @@ app.get('/product', function (req, res, next) {
 
 
   app.post('/product', function (req, res, next) {
+    const { product_name, product_price, product_cat } = req.body;
+  
     connection.query(
-      'INSERT INTO `node_pd`(`product_name`, `product_price`, `product_cat`) VALUES (?, ?, ?, ?)',
-      [req.body.fname, req.body.lname, req.body.username, req.body.password, req.body.avatar],
+      'INSERT INTO `node_pd`(`product_name`, `product_price`, `product_cat`) VALUES (?, ?, ?)',
+      [product_name, product_price, product_cat],
       function(err, results) {
-        res.json(results);
+        if (err) {
+          return next(err); 
+        }
+        if (results.affectedRows === 0) {
+          return res.status(500).json({ message: 'ไม่สามารถเพิ่มข้อมูลได้' });
+        }
+        res.status(201).json({ message: 'เพิ่มข้อมูลสำเร็จ'});
       }
     );
-  })
+  });
+  
   app.put('/product/edit', function (req, res, next) {
     const {  product_name, product_price, product_cat, product_id } = req.body;
   
@@ -69,17 +78,17 @@ app.get('/product', function (req, res, next) {
         if (results.affectedRows === 0) {
           return res.status(404).json({ message: 'แก้ไขไม่สำเร็จ' });
         }
-        res.json({ message: 'แก้ไขสำเร็จ', results });
+        res.json({ message: 'แก้ไขสำเร็จ' });
       }
     );
   });
   
   app.delete('/product/delete', function (req, res, next) {
-    const { id } = req.body;
+    const { product_id } = req.body;
   
     connection.query(
       'DELETE FROM `node_pd` WHERE product_id = ?',
-      [id],
+      [product_id],
       function(err, results) {
         if (err) {
           return next(err); 
@@ -87,7 +96,7 @@ app.get('/product', function (req, res, next) {
         if (results.affectedRows === 0) {
           return res.status(404).json({ message: 'ไม่พบข้อมูลสินค้า' });
         }
-        res.json({ message: 'ลบข้อมูลสำเร็จ', results });
+        res.json({ message: 'ลบข้อมูลสำเร็จ' });
       }
     );
   });
